@@ -1,0 +1,274 @@
+
+// constants --------------------
+
+//image and tags files paths
+
+String IMAGE_PATH_PREFIX = "samples/untagged/dscn";
+String IMAGE_PATH_SUFFIX = ".jpg";
+
+String TAG_DATA_PATH_PREFIX = "samples/data/tags_";
+String TAG_DATA_PATH_SUFFIX = ".json";
+
+//image id
+
+int MIN_IMAGE_ID = 1;
+int MAX_IMAGE_ID = 2693;
+int IMAGE_ID_DIGITS = 4;
+
+//image display size
+
+int IMG_DISPLAY_WIDTH = 800;
+int IMG_DISPLAY_HEIGHT = 600;
+
+// -------------------------------
+
+//global variables
+
+int imageId = 1;
+PImage currentImage;
+String lastMessage = "";
+color messageColor = 0;
+TaggedImage currentTags = new TaggedImage();
+
+void logInfo(String message) {
+  lastMessage = message;
+  messageColor = #000000;
+}
+
+void logError(String error) {
+  lastMessage = error;
+  messageColor = #ff2222;
+}
+
+void printGenericHelp() {
+  print("\n\n\n\n-------------------------------------------------------\n\n");
+  print("INSTRUZIONI : ");
+  print("");
+  print("Utilizza il pulsante sinistro del mouse per delimitare i contorni di un oggetto.\n");
+  print("Chiudi l'area col pulsante destro.\n");
+  print("Utilizza Backspace per eliminare l'ultima area delimitata.\n");
+  print("Utilizza la barra spaziatrice per ridisegnare la finestra.\n");
+  print("Utilizza i pulsanti 'a', 'v', 'c', 'i', 'o', 'p', 't' per indicare il tipo di materiale delimitato\n");
+  print("(rispettivamente 'Alluminio', 'Vetro', 'Carta/Cartone', 'Indifferenziata', 'Organico', \n");
+  print("  'Plastica' e 'meTalli o cemenTi') nell'ultima area delimitata.\n");
+  print("Utilizza le freccette destra e sinistra per scorrere le immagini, e \n");
+  print("freccia su e freccia giu' per caricare e salvare i dati in file JSON.\n");
+  print("Tasti . e - per scorrere di +10 e -10 le immagini.\n");
+  print("Tasti PageUp e PageDown per scorrere di +100 e -100 le immagini.\n");
+  print("Premi 'h' per visualizzare l'help relativo ai tag.");
+  print("-------------------------------------------------------\n\n");
+}
+
+void printTagHelp() {
+  print("\n-------------------------------------\n");
+  print("TIPOLOGIE DI TAG DISPONIBILI :\n\n");
+  print("a : Alluminio\n");
+  print("v : Vetro\n");
+  print("c : Carta/Cartone\n");
+  print("i : Indifferenziata\n");
+  print("o : Organico\n");
+  print("p : Plastica\n");
+  print("t : Metalli e Cementi (Rifiuti ingombranti)\n\n");
+  print("\n-------------------------------------\n");
+}
+
+void setup() {
+  size(800,630);
+
+  printGenericHelp();
+
+  reloadImage();
+}
+
+String getCurrentNormalizedImageId() {
+  String num = ""+imageId;
+  while (num.length()<IMAGE_ID_DIGITS) {
+    num = "0"+num;
+  }
+  return num;
+}
+
+void reloadImage() {
+  String path = IMAGE_PATH_PREFIX+getCurrentNormalizedImageId()+IMAGE_PATH_SUFFIX;
+  currentImage = loadImage(path);
+  currentTags = new TaggedImage();
+  currentTags.setupWithImage(currentImage);
+  currentTags.setImagePath(path);
+  logInfo("Image loaded : "+path);
+}
+
+void draw () {
+  stroke(0,0,0);
+  imageMode(CORNER);
+  image(currentImage, 0, 0, IMG_DISPLAY_WIDTH, IMG_DISPLAY_HEIGHT);
+  fill(255);
+  stroke(255);
+  rect(0,IMG_DISPLAY_HEIGHT,IMG_DISPLAY_WIDTH,IMG_DISPLAY_HEIGHT+20);
+  fill(0);
+  textSize(18);
+  color(messageColor);
+  text(lastMessage,10,IMG_DISPLAY_HEIGHT+22);
+  
+  currentTags.prepare();
+  currentTags.draw();
+  
+  //add draw of TaggedImage
+  noLoop();
+}
+
+
+void mouseClicked() {
+  if (mouseButton==LEFT) {
+    TaggedArea ta = currentTags.getLastTaggedArea();
+    if (ta.getPointList().isClosed()) {
+      if (ta.getTagType()=="untagged") {
+        logError("È necessario taggare l'area prima di proseguire.");
+        return; 
+      } else {
+        currentTags.newTaggedArea();
+        ta = currentTags.getLastTaggedArea();
+      }
+    }
+    ta.getPointList().add((float)mouseX,(float)mouseY);
+    loop();
+  }
+  if (mouseButton==RIGHT) {
+    if (!currentTags.getLastTaggedArea().getPointList().isClosed()) {
+      currentTags.getLastTaggedArea().getPointList().close();
+      logInfo("Tag area closed.");
+      loop();
+    }
+  }
+}
+
+void keyPressed() {
+
+  if (keyCode==BACKSPACE) {
+    currentTags.deleteLastTaggedArea();
+    loop();
+  }
+  
+  if (key==' ') {
+    loop();
+  }
+  
+  //select tag key codes
+  
+  if (key=='u') {
+    //untagged/unknown
+    currentTags.getLastTaggedArea().setTagType("untagged");
+    loop();
+  }
+  
+  if (key=='a') {
+    //alluminio
+    currentTags.getLastTaggedArea().setTagType("Alluminio");
+    loop();
+  }
+  if (key=='c') {
+    //carta/cartone
+    currentTags.getLastTaggedArea().setTagType("Carta/Cartone");
+    loop();
+  }
+  if (key=='v') {
+    //vetro
+    currentTags.getLastTaggedArea().setTagType("Vetro");
+    loop();
+  }
+  if (key=='p') {
+    //plastica
+    currentTags.getLastTaggedArea().setTagType("Plastica");
+    loop();
+  }
+  if (key=='o') {
+    //organico
+    currentTags.getLastTaggedArea().setTagType("Organico");
+    loop();
+  }
+  if (key=='i') {
+    //indifferenziata
+    currentTags.getLastTaggedArea().setTagType("Indifferenziata");
+    loop();
+  }
+  if (key=='t') {
+    //rifiuti pesanti o di grandi dimensioni (elettrodomestici, parti in cemento armato, ecc)
+    currentTags.getLastTaggedArea().setTagType("Rifiuti pesanti/ingombranti");
+    loop();
+  }
+  
+  //help
+  
+  if (key=='h') {
+    printTagHelp();
+  }
+  
+  //load and save key codes
+  
+  if (keyCode==UP) {
+    //carica i dati da file
+    String path = TAG_DATA_PATH_PREFIX+getCurrentNormalizedImageId()+TAG_DATA_PATH_SUFFIX;
+    JSONObject data = loadJSONObject(path);
+    currentTags = new TaggedImage();
+    currentTags.fromJson(data);
+    currentTags.afterLoad(IMG_DISPLAY_WIDTH,IMG_DISPLAY_HEIGHT);
+    logInfo("Loaded tag data from "+path);
+    loop();
+  }
+  
+  if (keyCode==DOWN) {
+    //salva i dati su file
+    String path = TAG_DATA_PATH_PREFIX+getCurrentNormalizedImageId()+TAG_DATA_PATH_SUFFIX;
+    currentTags.beforeSave(IMG_DISPLAY_WIDTH,IMG_DISPLAY_HEIGHT);
+    JSONObject data = currentTags.toJson();
+    currentTags.afterLoad(IMG_DISPLAY_WIDTH,IMG_DISPLAY_HEIGHT);
+    saveJSONObject(data,path);
+    logInfo("Saved tag data to "+path);
+    loop();
+  }
+
+  //select image key codes 
+  
+  if (keyCode==RIGHT) {
+    if (imageId<MAX_IMAGE_ID-1)
+    imageId++;
+    reloadImage();
+    loop();
+  }
+  
+  if (keyCode==LEFT) {
+    if (imageId>MIN_IMAGE_ID)
+      imageId--;
+    reloadImage();
+    loop();
+  }
+  
+  if (key=='.') { //MINUS : image - 10
+    if (imageId>MIN_IMAGE_ID+9)
+      imageId-=10;
+    reloadImage();
+    loop();
+  }
+  if (key=='-') { //DOT : image + 10 
+    if (imageId<MAX_IMAGE_ID-9)
+      imageId+=10;
+    reloadImage();
+    loop();
+  }
+  
+  if (keyCode==33) { //PAGE_UP : image + 100
+    if (imageId<MAX_IMAGE_ID-99)
+      imageId+=100;
+    reloadImage();
+    loop();
+  }
+  if (keyCode==34) { //PAGE_DOWN : image - 100
+    if (imageId>MIN_IMAGE_ID+99)
+      imageId-=100;
+    reloadImage();
+    loop();
+  }
+  
+  if (keyCode==ESC) {
+    exit();
+  }
+}
