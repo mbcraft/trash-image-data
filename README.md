@@ -1,6 +1,10 @@
 
+Warning : this repository is quite large (12 GB of data).
+
 This repository contains a huge collection of tagged trash images tagged by litter type.
 The tags are saved in json files using the same numeration as the images.
+
+The images has a focus that has became worser with the execution of the shoots. So the first images in order have better focus than the last ones.
 
 The trash.exe software is the actual software created by me that i used to tag the litter images.
 
@@ -8,10 +12,10 @@ Source code of that software is placed in the 'source' folder.
 
 Image samples and their tags are places in the 'samples' folder.
 
-These images were meant to be used to create a mechanical device to remove litter from urban/extraurban environment with little or no human effort. Keep in mind however that doing litterpicking manually has the following advantages :
+These images were meant to be used to create a mechanical device to remove litter from urban/extraurban environment with little or no human effort. Keep in mind however that doing litterpicking manually (when feasible) has the following advantages :
 
 - improves back muscles
-- improves neurological function
+- improves neurological functions
 - improves immune system
 - helps gain social reputation
 
@@ -27,7 +31,7 @@ Up arrow : loads data for current image
 Down arrow : saves data for current image
 Backspace : removes current tag
 
-About the last tag :
+About the last tag, press one of the following keys to assign a tag type to the just made polygon :
 
 Key 'a' : alluminium
 Key 'v' : glass
@@ -42,6 +46,8 @@ Mouse :
 
 - left button click : continue the polygon adding a point
 - right button click : close current polygon
+
+Other informations :
 
 When the tagging software is started make a single click on the image to unlock it.
 
